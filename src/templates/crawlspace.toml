@@ -1,0 +1,6 @@
+name = "my-first-crawler"
+entry = "./index.ts"
+
+maxPagesPerCrawl = 10000
+public = true
+schedule = "@daily"
