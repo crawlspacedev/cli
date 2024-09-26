@@ -10,6 +10,7 @@ interface Crawler {
   handler: (handlerProps: {
     $: <T>(querySelector: string) => HTMLElement | null;
     $$: <T>(querySelector: string) => Array<T>;
+    toMarkdown: (querySelector?: string) => string;
     json?: any;
     request: Request;
     response: Response;

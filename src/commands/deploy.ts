@@ -32,7 +32,7 @@ export default async function deploy(pathArg?: string) {
 
   console.log(`Deploying ${config.name} to crawlspace...`);
   try {
-    const url = `https://api.crawlspace.workers.dev/v1/deploy`;
+    const url = `https://api.crawlspace.dev/v1/deploy`;
     const response = await fetch(url, {
       method: "POST",
       headers: {

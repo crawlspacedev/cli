@@ -1,5 +1,6 @@
 import { parseHTML } from "linkedom";
 import type { HTMLElement, NodeList } from "linkedom";
+import { NodeHtmlMarkdown } from "node-html-markdown-cloudflare";
 import path from "path";
 import sqlite3 from "sqlite3";
 import { open } from "sqlite";
@@ -51,6 +52,10 @@ export default async function run(pathArg?: string) {
 
   const enqueued = new Set(urls);
   const visited = new Set();
+
+  // TODO: ignore certain html tags
+  const nhm = new NodeHtmlMarkdown();
+
   for (const message of messages) {
     if (message.attempts > 3) {
       continue;
@@ -93,22 +98,26 @@ export default async function run(pathArg?: string) {
 
     let $ = (qs: string) => <HTMLElement | null>null;
     let $$ = (qs: string) => <NodeList | never[]>[];
-    let json;
+    let toMarkdown = (qs?: string) => "";
     const contentType = response.headers.get("content-type") || "";
     if (contentType.startsWith("text/html")) {
       const html = await response.text();
       const document = parseHTML(html).document;
       $ = (qs: string): HTMLElement => document.querySelector(qs);
       $$ = (qs: string): NodeList => document.querySelectorAll(qs);
+      toMarkdown = (qs?: string): string => {
+        const $el = qs ? $(qs) : $("main") || $("body");
+        return nhm.translate($el?.innerHTML || "");
+      };
     } else if (contentType.startsWith("application/json")) {
-      json = await response.json();
+      var json = await response.json();
     } else {
       // TODO: remove continue here?
       continue;
     }
 
     // run user code
-    const handlerProps = { $, $$, json, request, response };
+    const handlerProps = { $, $$, toMarkdown, json, request, response };
     const { data, enqueue: links } = await handler(handlerProps);
 
     // save data in R2 / D1
