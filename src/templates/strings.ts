@@ -50,6 +50,7 @@ export const tsdef = `interface Crawler {
     json?: any;
     request: Request;
     response: Response;
+    logger: Console;
   }) => {
     data?: Record<string, string | number | boolean | null>;
     enqueue?: string[];
