@@ -1,6 +1,5 @@
 import { findUp, pathExists } from "find-up";
 import fs from "fs";
-import os from "os";
 import path from "path";
 
 export async function traverseUp(fileName: string): Promise<string | null> {
@@ -12,17 +11,6 @@ export async function traverseUp(fileName: string): Promise<string | null> {
     { type: "directory" },
   );
   return root;
-}
-
-export async function getCrawlerToken(): Promise<string | undefined> {
-  try {
-    const homePath = path.join(os.homedir(), ".crawlspace", "config.json");
-    const homeConfig = fs.readFileSync(homePath, "utf-8");
-    const { token } = JSON.parse(homeConfig);
-    return token;
-  } catch (err) {
-    throw "Please log in with `crsp login`";
-  }
 }
 
 export async function getEntryPath(config, pathArg?: string): Promise<string> {

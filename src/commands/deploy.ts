@@ -1,21 +1,11 @@
 import fs from "fs";
 import { parse as parseToml } from "smol-toml";
 
-import { getCrawlerToken, getEntryPath, readSourceFile } from "../utils/cwd";
+import { getEntryPath, readSourceFile } from "../utils/cwd";
+import api from "../utils/api";
 import bundle from "../utils/bundle";
 
 export default async function deploy(pathArg?: string) {
-  try {
-    var token = await getCrawlerToken();
-  } catch (err) {
-    console.error(err);
-    return;
-  }
-  if (!token) {
-    console.log("Please log in with `crsp login`");
-    return;
-  }
-
   const crawlerToml = await readSourceFile("crawler.toml", pathArg);
   try {
     var config = parseToml(crawlerToml);
@@ -32,13 +22,8 @@ export default async function deploy(pathArg?: string) {
 
   console.log(`Deploying ${config.name} to crawlspace...`);
   try {
-    const url = `https://api.crawlspace.dev/v1/deploy`;
-    const response = await fetch(url, {
+    const json = await api("/v1/deploy", {
       method: "POST",
-      headers: {
-        Authorization: token,
-        "Content-Type": "application/json",
-      },
       body: JSON.stringify({
         bundle: bundleContent,
         config,
@@ -46,12 +31,6 @@ export default async function deploy(pathArg?: string) {
         source,
       }),
     });
-    if (!response.ok) {
-      console.error(response.status, response.statusText);
-      console.log(await response.text());
-      return;
-    }
-    const json = await response.json();
     console.log(json);
   } catch (error) {
     console.error(error);
