@@ -123,8 +123,8 @@ export default async function run(pathArg?: string) {
     // save data in R2 / D1
     if (data) {
       const now = new Date().toISOString();
-      const columns = ["url_hostname", "url"].concat(Object.keys(data));
-      const values = [hostname, url].concat(
+      const columns = ["url"].concat(Object.keys(data));
+      const values = [url].concat(
         Object.values(data).map((v) => (v === undefined ? null : v)),
       );
       const sql = `INSERT INTO ${tableSafe(config.name)} (${columns.join(", ")})

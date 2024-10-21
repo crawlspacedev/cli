@@ -14,13 +14,22 @@ export default async function deploy(pathArg?: string) {
     return;
   }
 
+  // TODO: compare schema against crawler's d1 table_info to add/remove columns
+  // console.log(`Validating schema...`);
+  // try {
+  //   const { result } = await api(`/v1/pragma/${config.name}`);
+  //   console.log(result[0].results);
+  // } catch (error) {
+  //   console.error(error);
+  // }
+
   const entryPath = await getEntryPath(config, pathArg);
   const bundlePath = await bundle(config.name, entryPath);
   const bundleContent = fs.readFileSync(bundlePath, "utf-8");
   const source = fs.readFileSync(entryPath, "utf-8");
   const readme = await readSourceFile("README.md", pathArg);
 
-  console.log(`Deploying ${config.name} to crawlspace...`);
+  console.log(`Deploying ${config.name}...`);
   try {
     const json = await api("/v1/deploy", {
       method: "POST",
@@ -34,5 +43,17 @@ export default async function deploy(pathArg?: string) {
     console.log(json);
   } catch (error) {
     console.error(error);
+    throw error;
+  }
+
+  console.log(`Initializing ${config.name}...`);
+  try {
+    const json = await api(`/v1/dispatch/${config.name}/init`, {
+      method: "POST",
+    });
+    console.log(json);
+  } catch (error) {
+    console.error(error);
+    throw error;
   }
 }

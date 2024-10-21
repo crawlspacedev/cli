@@ -10,7 +10,6 @@ export function zodToSqlStatement(
 ): string {
   const sqlParts: string[] = [
     "id INTEGER PRIMARY KEY AUTOINCREMENT",
-    "url_hostname TEXT NOT NULL",
     "url TEXT NOT NULL",
     "created_at TEXT DEFAULT (datetime('now'))",
   ];

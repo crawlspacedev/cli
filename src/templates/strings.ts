@@ -2,7 +2,6 @@ export const readme = (name: string) => `# ${name}`;
 
 export const configToml = (name: string) => `name = "${name}"
 entry = "./main.ts"
-
 maxPagesPerCrawl = 10000
 public = true
 schedule = "@daily"
@@ -42,7 +41,21 @@ export default crawler;
 
 export const tsdef = `interface Crawler {
   schema: ({ z }) => any;
-  seed: () => string[] | Promise<string[]>;
+  seed: (seedProps: {
+    select: ({
+      from,
+      fields,
+      where,
+      orderBy,
+      limit,
+    }: {
+      from: string;
+      fields: string[];
+      where?: Array<{ field: string; operator: "="; value: string }>;
+      orderBy?: Record<string, "ASC" | "DESC">;
+      limit?: number;
+    }) => Promise<Record<string, any>[]>;
+  }) => string[] | Promise<string[]>;
   handler: (handlerProps: {
     $: <T>(querySelector: string) => HTMLElement | null;
     $$: <T>(querySelector: string) => Array<T>;

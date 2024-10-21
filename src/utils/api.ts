@@ -2,7 +2,7 @@ import { getAuthTokens, setAuthTokens } from "./auth";
 
 export default async function api<T>(
   path: string,
-  options: RequestInit,
+  options?: RequestInit,
 ): Promise<T> {
   try {
     var { access_token, refresh_token } = getAuthTokens();
@@ -40,7 +40,7 @@ export default async function api<T>(
 
   if (!response.ok) {
     console.error(await response.text());
-    throw (response.status, response.statusText);
+    throw { status: response.status, statusText: response.statusText };
   }
 
   return await response.json();

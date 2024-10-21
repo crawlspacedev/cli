@@ -1,6 +1,29 @@
+# Name of your crawler. Keep as unique for your user.
 name = "my-first-crawler"
-entry = "./index.ts"
 
+# Path to the entrypoint of your crawler.
+entry = "./main.ts"
+
+# How often your crawler runs.
+# Set to `@manual` to only trigger manually.
+# Accepts valid crontab syntax and shorthand expressions.
+# Crawlers can run at most once per minute.
+# Go to https://cron-ai.vercel.app for help generating a cron expression.
+# Crontab syntax examples:
+#         *               *                *                   *              *
+#   [minute (0-59)] [hour (0-23)] [day of month (1-31)] [month (1-12)] [weekday (0-7)]
+#         *               *                *                   *              *
+#   schedule = "*/10 * * * *"  # every 10 minutes
+#   schedule = "45 23 * * *"   # every day at 11:45pm UTC
+#   schedule = "30 12 * * 2"   # every Tuesday at 12:30pm UTC
+#   schedule = "59 1 14 3 *"   # every March 14 at 1:59am UTC
+# Valid shorthand examples:
+#   schedule = "@hourly"       # -> 0 * * * * (every hour at the beginning of the hour)
+#   schedule = "@daily"        # -> 0 0 * * * (every day at midnight)
+#   schedule = "@weekly"       # -> 0 0 * * 0 (every week at midnight on Sunday)
+#   schedule = "@monthly"      # -> 0 0 1 * * (every month at midnight on the first of the month)
+schedule = "@manual"
+
+# Maximum number of pages to request per crawler run.
+# Does not include retries.
 maxPagesPerCrawl = 10000
-public = true
-schedule = "@daily"

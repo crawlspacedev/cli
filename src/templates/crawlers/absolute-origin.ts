@@ -1,9 +1,4 @@
 const crawler: Crawler = {
-  config: {
-    maxPagesPerCrawl: 10_000,
-    schedule: "@daily",
-  },
-
   schema({ z }) {
     return z.object({
       title: z.string().optional(),
