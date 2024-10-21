@@ -31,8 +31,8 @@ export default async function deploy(pathArg?: string) {
 
   console.log(`Deploying ${config.name}...`);
   try {
-    const json = await api("/v1/deploy", {
-      method: "POST",
+    const json = await api("/v1/crawler", {
+      method: "PUT",
       body: JSON.stringify({
         bundle: bundleContent,
         config,
@@ -48,7 +48,7 @@ export default async function deploy(pathArg?: string) {
 
   console.log(`Initializing ${config.name}...`);
   try {
-    const json = await api(`/v1/dispatch/${config.name}/init`, {
+    const json = await api(`/v1/crawler/${config.name}/dispatch/init`, {
       method: "POST",
     });
     console.log(json);
