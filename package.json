@@ -1,6 +1,6 @@
 {
   "name": "@crawlspace/cli",
-  "version": "0.0.9",
+  "version": "0.1.2",
   "private": false,
   "type": "module",
   "bin": {
@@ -13,7 +13,8 @@
   },
   "files": [
     "bin",
-    "dist"
+    "dist",
+    "README.md"
   ],
   "dependencies": {
     "@inquirer/prompts": "^6.0.1",

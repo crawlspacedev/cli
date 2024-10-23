@@ -5,6 +5,8 @@ import { getEntryPath, readSourceFile } from "../utils/cwd";
 import api from "../utils/api";
 import bundle from "../utils/bundle";
 
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
 export default async function deploy(pathArg?: string) {
   const crawlerToml = await readSourceFile("crawler.toml", pathArg);
   try {
@@ -30,6 +32,7 @@ export default async function deploy(pathArg?: string) {
   const readme = await readSourceFile("README.md", pathArg);
 
   console.log(`Deploying ${config.name}...`);
+  let crawlerUrl = "";
   try {
     const json = await api("/v1/crawler", {
       method: "PUT",
@@ -40,20 +43,22 @@ export default async function deploy(pathArg?: string) {
         source,
       }),
     });
-    console.log(json);
+    crawlerUrl = json.crawler_url;
   } catch (error) {
     console.error(error);
     throw error;
   }
 
   console.log(`Initializing ${config.name}...`);
+  await sleep(2500); // hacky workaround for race condition to user worker
   try {
-    const json = await api(`/v1/crawler/${config.name}/dispatch/init`, {
+    await api(`/v1/crawler/${config.name}/dispatch/schedule`, {
       method: "POST",
     });
-    console.log(json);
   } catch (error) {
     console.error(error);
     throw error;
   }
+
+  console.log(`✨ Successfully deployed ${crawlerUrl}`);
 }
