@@ -9,7 +9,7 @@ import { z } from "zod";
 
 import bundle from "../utils/bundle";
 import { getEntryPath, readSourceFile, traverseUp } from "../utils/cwd";
-import { tableSafe, zodToSqlStatement } from "../utils/db";
+import { zodToSqlStatement } from "../utils/db";
 import { permitUrls, randomHeaders } from "../utils/helpers";
 
 export default async function run(pathArg?: string) {
@@ -127,7 +127,7 @@ export default async function run(pathArg?: string) {
       const values = [url].concat(
         Object.values(data).map((v) => (v === undefined ? null : v)),
       );
-      const sql = `INSERT INTO ${tableSafe(config.name)} (${columns.join(", ")})
+      const sql = `INSERT INTO [${config.name}] (${columns.join(", ")})
           VALUES (${values.map((c) => "?").join(", ")})`;
       try {
         const stmt = await db.prepare(sql);

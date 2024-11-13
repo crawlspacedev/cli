@@ -1,9 +1,5 @@
 import { z, ZodObject } from "zod";
 
-export function tableSafe(tableName: string): string {
-  return `${tableName.replace(/-/g, "_")}_data`;
-}
-
 export function zodToSqlStatement(
   tableName: string,
   schema: z.ZodObject<any>,
@@ -49,5 +45,5 @@ export function zodToSqlStatement(
     sqlParts.push(`${key} ${sqlType} ${constraints.join(" ")}`);
   }
 
-  return `CREATE TABLE IF NOT EXISTS ${tableSafe(tableName)} (${sqlParts.join(", ")});`;
+  return `CREATE TABLE IF NOT EXISTS [${tableName}] (${sqlParts.join(", ")});`;
 }
