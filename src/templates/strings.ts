@@ -1,4 +1,8 @@
-export const readme = (name: string) => `# ${name}`;
+export const readme = (description: string) => `${description}
+
+---
+
+*ℹ️ To modify this text, edit README.md, and then redeploy with \`crsp deploy\`.*`;
 
 export const configToml = (
   name: string,
@@ -65,7 +69,22 @@ export const crawlerTemplate = `const crawler: Crawler = {
 export default crawler;
 `;
 
-export const tsdef = `interface Crawler {
+export const tsdef = `type Handler = {
+  data?: Record<string, string | number | boolean | null>;
+  enqueue?: string[];
+};
+
+type Tool = {
+  name: string;
+  description: string;
+  parameters: {
+    type: string;
+    properties: Record<string, { type: string; description: string }>;
+    required: string[];
+  };
+};
+
+interface Crawler {
   schema: ({ z }) => any;
   seed: (seedProps: {
     select: ({
@@ -85,15 +104,46 @@ export const tsdef = `interface Crawler {
   handler: (handlerProps: {
     $: <T>(querySelector: string) => HTMLElement | null;
     $$: <T>(querySelector: string) => Array<T>;
+    ai: {
+      extract: <T>(
+        $el: HTMLElement | string,
+        options: {
+          prompt?: string;
+          tools?: Array<Tool>;
+          temperature?: number;
+          max_tokens?: number;
+          top_p?: number;
+          top_k?: number;
+          seed?: number;
+          repetition_penalty?: number;
+          frequency_penalty?: number;
+          presence_penalty?: number;
+        },
+      ) => Promise<T>;
+      sentiment: (
+        $el: HTMLElement | string,
+      ) => Promise<{ score?: number; label?: string }[]>;
+      summarize: (
+        $el: HTMLElement | string,
+        options?: { max_length: number },
+      ) => Promise<{ summary: string }>;
+      tool: ({
+        name,
+        description,
+        schema,
+      }: {
+        name: string;
+        description: string;
+        schema: any;
+      }) => Tool;
+    };
     toMarkdown: (querySelector?: string) => string;
     json?: any;
     request: Request;
     response: Response;
     logger: Console;
-  }) => {
-    data?: Record<string, string | number | boolean | null>;
-    enqueue?: string[];
-  };
+    z: any;
+  }) => Handler | Promise<Handler>;
 }`;
 
 export const tsconfig = `{

@@ -54,6 +54,11 @@ export default async function create() {
     validate: (input: string) => validate(input, crawlerDir),
   });
 
+  const description = await input({
+    message: "Brief description:",
+    required: true,
+  });
+
   const lang = await select({
     message: "Crawler language:",
     choices: [
@@ -111,7 +116,7 @@ export default async function create() {
   fs.writeFileSync(mainFilePath, templates.crawlerTemplate, "utf-8");
 
   const readmeFilePath = path.join(crawlerDir, name, "README.md");
-  fs.writeFileSync(readmeFilePath, templates.readme(name), "utf-8");
+  fs.writeFileSync(readmeFilePath, templates.readme(description), "utf-8");
 
   // TODO: open main.ts in $EDITOR ?
 

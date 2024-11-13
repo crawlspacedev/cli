@@ -1,6 +1,7 @@
 import fs from "fs";
 import { parse as parseToml } from "smol-toml";
 
+import pkgJson from "../../package.json";
 import { getEntryPath, readSourceFile } from "../utils/cwd";
 import api from "../utils/api";
 import bundle from "../utils/bundle";
@@ -41,6 +42,7 @@ export default async function deploy(pathArg?: string) {
         config,
         readme,
         source,
+        cli_version: pkgJson.version,
       }),
     });
     crawlerUrl = json.crawler_url;
