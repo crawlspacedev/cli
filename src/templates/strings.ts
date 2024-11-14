@@ -60,7 +60,7 @@ export const crawlerTemplate = `const crawler: Crawler = {
       .map(({ href }) => new URL(href).origin);
 
     return {
-      data: { title, description },
+      insert: { title, description },
       enqueue: links,
     };
   },
