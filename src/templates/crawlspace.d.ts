@@ -1,5 +1,7 @@
 type Handler = {
-  data?: Record<string, string | number | boolean | null>;
+  insert?: Record<string, string | number | boolean | null>;
+  upsert?: Record<string, string | number | boolean | null>;
+  onConflict?: string;
   enqueue?: string[];
 };
 
