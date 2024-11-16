@@ -1,12 +1,14 @@
 import { confirm, input, select } from "@inquirer/prompts";
 import fs from "fs";
 import { mkdirp } from "mkdirp";
-import path from "path";
+import path, { dirname } from "path";
 import { parse as parseToml } from "smol-toml";
+import { fileURLToPath } from "url";
 
-import * as templates from "../templates/strings";
 import { traverseUp } from "../utils/cwd";
 import { validate } from "../utils/validate";
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
 
 export default async function create() {
   let root = await traverseUp("crawlspace.toml");
@@ -59,8 +61,22 @@ export default async function create() {
     required: true,
   });
 
+  const template = await select({
+    message: "Template:",
+    choices: [
+      {
+        name: "Basics > Inserting data",
+        value: "insert",
+      },
+      {
+        name: "Basics > Upserting data",
+        value: "upsert",
+      },
+    ],
+  });
+
   const lang = await select({
-    message: "Crawler language:",
+    message: "Language:",
     choices: [
       {
         name: "TypeScript (recommended)",
@@ -90,35 +106,62 @@ export default async function create() {
 
   if (lang === "typescript") {
     // overwrite if already exists
+    const tsdefTemplate = fs.readFileSync(
+      path.resolve(__dirname, "..", "templates", "crawlspace.d.ts"),
+      "utf-8",
+    );
     const tsdefFilePath = path.join(crawlerDir, "crawlspace.d.ts");
-    fs.writeFileSync(tsdefFilePath, templates.tsdef, "utf-8");
+    fs.writeFileSync(tsdefFilePath, tsdefTemplate, "utf-8");
 
     // warn if different tsconfig.json file found
     const tsconfigFilePath = path.join(crawlerDir, "tsconfig.json");
     if (fs.existsSync(tsconfigFilePath)) {
-      const tsconfig = fs.readFileSync(tsconfigFilePath, "utf-8");
-      if (templates.tsconfig !== tsconfig) {
-        console.warn("Warning: pre-existing tsconfig.json found. Overwrite?");
-      }
+      // const tsconfig = fs.readFileSync(tsconfigFilePath, "utf-8");
+      // if (templates.tsconfig !== tsconfig) {
+      //   console.warn("Warning: pre-existing tsconfig.json found. Overwrite?");
+      // }
     } else {
       // happy path
-      fs.writeFileSync(tsconfigFilePath, templates.tsconfig, "utf-8");
+      const tsconfigTemplate = fs.readFileSync(
+        path.resolve(__dirname, "..", "templates", "tsconfig.json"),
+        "utf-8",
+      );
+      fs.writeFileSync(tsconfigFilePath, tsconfigTemplate, "utf-8");
     }
   }
 
   mkdirp.sync(path.join(crawlerDir, name));
 
+  const configTomlTemplate = fs
+    .readFileSync(
+      path.resolve(__dirname, "..", "templates", "crawler.toml"),
+      "utf-8",
+    )
+    .replace("my-first-crawler", name);
   const configFilePath = path.join(crawlerDir, name, "crawler.toml");
-  fs.writeFileSync(configFilePath, templates.configToml(name), "utf-8");
+  fs.writeFileSync(configFilePath, configTomlTemplate, "utf-8");
 
   const ext = lang === "typescript" ? "ts" : "js";
+  let mainTemplate = fs.readFileSync(
+    path.resolve(__dirname, "..", "templates", "examples", `${template}.ts`),
+    "utf-8",
+  );
+  if (lang === "javascript") {
+    mainTemplate = mainTemplate.replace(": Crawler", "");
+  }
   const mainFilePath = path.join(crawlerDir, name, `main.${ext}`);
-  fs.writeFileSync(mainFilePath, templates.crawlerTemplate, "utf-8");
+  fs.writeFileSync(mainFilePath, mainTemplate, "utf-8");
 
+  const readmeTemplate = fs
+    .readFileSync(
+      path.resolve(__dirname, "..", "templates", "README.md"),
+      "utf-8",
+    )
+    .replace("$description", description);
   const readmeFilePath = path.join(crawlerDir, name, "README.md");
-  fs.writeFileSync(readmeFilePath, templates.readme(description), "utf-8");
+  fs.writeFileSync(readmeFilePath, readmeTemplate, "utf-8");
 
-  // TODO: open main.ts in $EDITOR ?
+  // TODO: if $EDITOR is defined, open main.ts in $EDITOR
 
   const relativePath = path.relative(".", path.join(crawlerDir, name));
   console.log();

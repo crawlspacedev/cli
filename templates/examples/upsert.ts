@@ -1,8 +1,9 @@
 const crawler: Crawler = {
   schema({ z }) {
     return z.object({
-      title: z.string().optional(),
-      description: z.string().optional(),
+      url: z.string().describe("unique"),
+      title: z.string(),
+      description: z.string(),
     });
   },
 
@@ -21,7 +22,8 @@ const crawler: Crawler = {
       .map(({ href }) => new URL(href).origin);
 
     return {
-      insert: { title, description },
+      upsert: { title, description },
+      onConflict: "url", // make sure this column is described as unique in your schema!
       enqueue: links,
     };
   },
