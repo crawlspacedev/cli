@@ -24,10 +24,10 @@ export default async function bundle(
       target: "esnext",
       format: "esm",
       external: ["@crawlspace/cli"],
+      drop: ["console", "debugger"],
       minify: true,
       sourcemap: false,
     });
-    // console.log(`Saved bundle to ${outfile}`);
     return outfile;
   } catch (error) {
     console.error(error);
