@@ -2,7 +2,7 @@ type Handler = {
   insert?: Record<string, string | number | boolean | null>;
   upsert?: Record<string, string | number | boolean | null>;
   onConflict?: string;
-  enqueue?: string[];
+  enqueue?: Array<string | Request>;
 };
 
 type Tool = {
@@ -31,7 +31,7 @@ interface Crawler {
       orderBy?: Record<string, "ASC" | "DESC">;
       limit?: number;
     }) => Promise<Record<string, any>[]>;
-  }) => string[] | Promise<string[]>;
+  }) => Array<string | Request> | Promise<Array<string | Request>>;
   handler: (handlerProps: {
     $: <T>(querySelector: string) => HTMLElement | null;
     $$: <T>(querySelector: string) => Array<T>;
