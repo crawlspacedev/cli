@@ -27,3 +27,21 @@ schedule = "@manual"
 # Maximum number of pages to request per crawler run.
 # Does not include retries.
 maxPagesPerCrawl = 10000
+
+# Queue consumer settings:
+[queue]
+
+# Maximum number of requests that a worker will attempt to fetch in parallel.
+# Can be any integer between 1 and 100, inclusive.
+batchSize = 10
+
+# Maximum amount of concurrent workers assigned to relieve queue pressure.
+# It can be useful to set this value to avoid an origin's rate limits.
+# Otherwise, it's recommended to keep this value as `auto`.
+# Can be the string `auto`, or any integer between 1 and 100, inclusive.
+maxConcurrency = "auto"
+
+# Maximum number of times that an unsucessful request will be retried.
+# Retries will be re-added to the queue with exponential backoff.
+# Can be any integer between 1 and 100, inclusive.
+maxRetries = 3

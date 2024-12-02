@@ -68,7 +68,8 @@ interface Crawler {
         schema: any;
       }) => Tool;
     };
-    toMarkdown: (querySelector?: string) => string;
+    env: Record<string, string>;
+    getMarkdown: (querySelector?: string) => string;
     json?: any;
     request: Request;
     response: Response;

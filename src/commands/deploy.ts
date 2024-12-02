@@ -1,3 +1,4 @@
+import dotenv from "dotenv";
 import fs from "fs";
 import { parse as parseToml } from "smol-toml";
 
@@ -17,20 +18,18 @@ export default async function deploy(pathArg?: string) {
     return;
   }
 
-  // TODO: compare schema against crawler's d1 table_info to add/remove columns
-  // console.log(`Validating schema...`);
-  // try {
-  //   const { result } = await api(`/v1/pragma/${config.name}`);
-  //   console.log(result[0].results);
-  // } catch (error) {
-  //   console.error(error);
-  // }
-
   const entryPath = await getEntryPath(config, pathArg);
   const bundlePath = await bundle(config.name, entryPath);
   const bundleContent = fs.readFileSync(bundlePath, "utf-8");
   const source = fs.readFileSync(entryPath, "utf-8");
   const readme = await readSourceFile("README.md", pathArg);
+  const env = await readSourceFile(".env", pathArg);
+  // only pass secrets that begin with `CRAWLSPACE_`
+  const secrets = Object.fromEntries(
+    Object.entries(env ? dotenv.parse(env) : {}).filter(([key]) =>
+      key.startsWith("CRAWLSPACE_"),
+    ),
+  );
 
   console.log(`Deploying ${config.name}...`);
   let crawlerUrl = "";
@@ -40,6 +39,7 @@ export default async function deploy(pathArg?: string) {
       body: JSON.stringify({
         bundle: bundleContent,
         config,
+        secrets,
         readme,
         source,
         cli_version: pkgJson.version,
