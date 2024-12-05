@@ -1,9 +1,12 @@
-# Name of your crawler. Keep as unique for your user.
+# Crawler configuration and settings
+
 name = "my-first-crawler"
+# Name of your crawler. Keep as unique for your user.
 
-# Path to the entrypoint of your crawler.
 entry = "./main.ts"
+# Relative path to the entrypoint of your crawler.
 
+schedule = "@manual"
 # How often your crawler runs.
 # Set to `@manual` to only trigger manually.
 # Accepts valid crontab syntax and shorthand expressions.
@@ -22,26 +25,51 @@ entry = "./main.ts"
 #   schedule = "@daily"        # -> 0 0 * * * (every day at midnight)
 #   schedule = "@weekly"       # -> 0 0 * * 0 (every week at midnight on Sunday)
 #   schedule = "@monthly"      # -> 0 0 1 * * (every month at midnight on the first of the month)
-schedule = "@manual"
 
+maxPagesPerCrawl = 10000
 # Maximum number of pages to request per crawler run.
 # Does not include retries.
-maxPagesPerCrawl = 10000
 
-# Queue consumer settings:
 [queue]
+# Queue consumer settings:
 
+batchSize = 10
 # Maximum number of requests that a worker will attempt to fetch in parallel.
 # Can be any integer between 1 and 100, inclusive.
-batchSize = 10
 
+maxConcurrency = "auto"
 # Maximum amount of concurrent workers assigned to relieve queue pressure.
 # It can be useful to set this value to avoid an origin's rate limits.
 # Otherwise, it's recommended to keep this value as `auto`.
 # Can be the string `auto`, or any integer between 1 and 100, inclusive.
-maxConcurrency = "auto"
 
+maxRetries = 3
 # Maximum number of times that an unsucessful request will be retried.
 # Retries will be re-added to the queue with exponential backoff.
 # Can be any integer between 1 and 100, inclusive.
-maxRetries = 3
+
+[bucket]
+# S3-compatible bucket settings:
+
+enabled = false
+# Whether or not to create a bucket for your crawler.
+# Use buckets to store large files like images and audio.
+# If you don't plan to save media files, you can leave this disabled.
+
+[vector]
+# Vector index settings:
+
+enabled = false
+# Whether or not to create a vector index for your crawler.
+# Use a vector index to store and query embeddings of text and images.
+# If you don't plan to generate embeddings, you can leave this disabled.
+
+dimensions = 768
+# The number of dimensions of each embedding.
+# Generate embeddings with an equal number of dimensions to save in the index.
+# This value cannot be changed after the index has been created.
+
+metric = "cosine"
+# The distance metric used to determine similar vectors.
+# Value is one of `cosine`, `euclidean`, or `dot-product`.
+# This value cannot be changed after the index has been created.

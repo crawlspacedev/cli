@@ -1,8 +1,23 @@
+type Row = Record<string, string | number | boolean | null | undefined>;
+
+type URLRequest = string | ({ url: string } & RequestInit);
+
 type Handler = {
-  insert?: Record<string, string | number | boolean | null>;
-  upsert?: Record<string, string | number | boolean | null>;
-  onConflict?: string;
-  enqueue?: Array<string | Request>;
+  enqueue?: URLRequest[];
+  insert?: {
+    row: Row;
+    embeddings?: number[][];
+  };
+  upsert?: {
+    row: Row;
+    onConflict: string;
+    embeddings?: number[][];
+  };
+  upload?: {
+    content: ArrayBuffer | Blob | string;
+    key?: string;
+    metadata?: Record<string, string>;
+  };
 };
 
 type Tool = {
@@ -31,11 +46,15 @@ interface Crawler {
       orderBy?: Record<string, "ASC" | "DESC">;
       limit?: number;
     }) => Promise<Record<string, any>[]>;
-  }) => Array<string | Request> | Promise<Array<string | Request>>;
+  }) => URLRequest[] | Promise<URLRequest[]>;
   handler: (handlerProps: {
     $: <T>(querySelector: string) => HTMLElement | null;
     $$: <T>(querySelector: string) => Array<T>;
     ai: {
+      embeddings: (
+        $el: HTMLElement | string | Array<HTMLElement | string>,
+        opts: { dimensions: number },
+      ) => Promise<{ embeddings: number[][] }>;
       extract: <T>(
         $el: HTMLElement | string,
         options: {

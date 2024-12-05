@@ -161,6 +161,13 @@ export default async function create() {
   const readmeFilePath = path.join(crawlerDir, name, "README.md");
   fs.writeFileSync(readmeFilePath, readmeTemplate, "utf-8");
 
+  const dotenvTemplate = fs.readFileSync(
+    path.resolve(__dirname, "..", "templates", "env.env"),
+    "utf-8",
+  );
+  const dotenvFilePath = path.join(crawlerDir, name, ".env");
+  fs.writeFileSync(dotenvFilePath, dotenvTemplate, "utf-8");
+
   // TODO: if $EDITOR is defined, open main.ts in $EDITOR
 
   const relativePath = path.relative(".", path.join(crawlerDir, name));

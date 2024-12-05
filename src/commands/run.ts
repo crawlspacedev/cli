@@ -1,3 +1,4 @@
+import dotenv from "dotenv";
 import { parseHTML } from "linkedom";
 import type { HTMLElement, NodeList } from "linkedom";
 import { NodeHtmlMarkdown } from "node-html-markdown-cloudflare";
@@ -5,6 +6,7 @@ import path from "path";
 import sqlite3 from "sqlite3";
 import { open } from "sqlite";
 import { parse as parseToml } from "smol-toml";
+import { ProxyAgent } from "undici";
 import { z } from "zod";
 
 import bundle from "../utils/bundle";
@@ -46,6 +48,17 @@ export default async function run(pathArg?: string) {
     return;
   }
 
+  const logger = new Proxy(console, {
+    get(target, method) {
+      if (typeof (target as any)[method] === "function") {
+        return (...args: any[]) => {
+          (target as any)[method](...args);
+        };
+      }
+      // Otherwise, return the original property (e.g., console.clear)
+      return (target as any)[method];
+    },
+  }) as Console;
   const urls = (await seed()) as string[];
   const permittedUrls = permitUrls(null, urls, config);
   const messages = permittedUrls.map((url) => ({ body: { url }, attempts: 0 }));
@@ -74,7 +87,7 @@ export default async function run(pathArg?: string) {
     const timeoutDuration = 8000;
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), timeoutDuration);
-    let response;
+    let response: Response;
     try {
       response = await fetch(request, { signal: controller.signal });
     } catch (err) {
@@ -98,14 +111,14 @@ export default async function run(pathArg?: string) {
 
     let $ = (qs: string) => <HTMLElement | null>null;
     let $$ = (qs: string) => <NodeList | never[]>[];
-    let toMarkdown = (qs?: string) => "";
+    let getMarkdown = (qs?: string) => "";
     const contentType = response.headers.get("content-type") || "";
     if (contentType.startsWith("text/html")) {
       const html = await response.text();
       const document = parseHTML(html).document;
       $ = (qs: string): HTMLElement => document.querySelector(qs);
       $$ = (qs: string): NodeList => document.querySelectorAll(qs);
-      toMarkdown = (qs?: string): string => {
+      getMarkdown = (qs?: string): string => {
         const $el = qs ? $(qs) : $("main") || $("body");
         return nhm.translate($el?.innerHTML || "");
       };
@@ -116,13 +129,30 @@ export default async function run(pathArg?: string) {
       continue;
     }
 
+    const env = await readSourceFile(".env", pathArg);
+    // only pass secrets that begin with `CRAWLSPACE_`
+    const secrets = Object.fromEntries(
+      Object.entries(env ? dotenv.parse(env) : {}).filter(([key]) =>
+        key.startsWith("CRAWLSPACE_"),
+      ),
+    );
+
     // run user code
-    const handlerProps = { $, $$, toMarkdown, json, request, response };
+    const handlerProps = {
+      $,
+      $$,
+      env: secrets,
+      getMarkdown,
+      json,
+      request,
+      response,
+      logger,
+      z,
+    };
     const { data, enqueue: links } = await handler(handlerProps);
 
     // save data in R2 / D1
     if (data) {
-      const now = new Date().toISOString();
       const columns = ["url"].concat(Object.keys(data));
       const values = [url].concat(
         Object.values(data).map((v) => (v === undefined ? null : v)),
