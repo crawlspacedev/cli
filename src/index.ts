@@ -2,6 +2,7 @@ import sade from "sade";
 import { version } from "../package.json";
 
 import deploy from "./commands/deploy";
+import dev from "./commands/dev";
 import login from "./commands/login";
 import logout from "./commands/logout";
 import create from "./commands/new";
@@ -42,8 +43,14 @@ cli
   });
 
 cli
+  .command("dev")
+  // .alias("start", "dev")
+  .describe("Run a crawler locally")
+  // .example("dev ./src/my-crawler")
+  .action(dev);
+
+cli
   .command("run [path]")
-  .alias("start", "dev")
   .describe("Run a crawler locally")
   .example("run ./src/my-crawler")
   .action(run);

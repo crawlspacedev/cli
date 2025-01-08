@@ -34,7 +34,7 @@ export default async function deploy(pathArg?: string) {
   console.log(`Deploying ${config.name}...`);
   let crawlerUrl = "";
   try {
-    const json = await api("/v1/crawler", {
+    const response = await api("/v1/crawler", {
       method: "PUT",
       body: JSON.stringify({
         bundle: bundleContent,
@@ -45,21 +45,28 @@ export default async function deploy(pathArg?: string) {
         cli_version: pkgJson.version,
       }),
     });
+    if (!response.ok) {
+      throw { status: response.status, statusText: response.statusText };
+    }
+    const json = await response.json();
     crawlerUrl = json.crawler_url;
   } catch (error) {
     console.error(error);
-    throw error;
+    return;
   }
 
   console.log(`Initializing ${config.name}...`);
   await sleep(2500); // hacky workaround for race condition to user worker
   try {
-    await api(`/v1/crawler/${config.name}/dispatch/schedule`, {
+    const response = await api(`/v1/crawler/${config.name}/dispatch/schedule`, {
       method: "POST",
     });
+    if (!response.ok) {
+      throw { status: response.status, statusText: response.statusText };
+    }
   } catch (error) {
     console.error(error);
-    throw error;
+    return;
   }
 
   console.log(`✨ Successfully deployed ${crawlerUrl}`);
