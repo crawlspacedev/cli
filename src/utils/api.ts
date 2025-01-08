@@ -13,7 +13,7 @@ export default async function api(
     throw "Please log in with `crsp login`";
   }
 
-  const API_BASE_URL = "http://localhost:8787"; // TODO: use env var for local dev?
+  const API_BASE_URL = "https://api.crawlspace.dev"; // TODO: use env var for local dev
   const url = `${API_BASE_URL}${path}`;
   const headers = {
     Authorization: access_token,
