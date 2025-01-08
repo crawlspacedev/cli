@@ -1,6 +1,5 @@
 import fs from "fs";
 import { decodeJwt } from "jose";
-import { mkdirp } from "mkdirp";
 import os from "os";
 import path from "path";
 

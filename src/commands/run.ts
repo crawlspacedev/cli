@@ -6,13 +6,12 @@ import path from "path";
 import sqlite3 from "sqlite3";
 import { open } from "sqlite";
 import { parse as parseToml } from "smol-toml";
-import { ProxyAgent } from "undici";
 import { z } from "zod";
 
 import bundle from "../utils/bundle";
 import { getEntryPath, readSourceFile, traverseUp } from "../utils/cwd";
 import { zodToSqlStatement } from "../utils/db";
-import { permitUrls, randomHeaders } from "../utils/helpers";
+import { normalizeRequests, randomHeaders } from "../utils/helpers";
 
 export default async function run(pathArg?: string) {
   const root = await traverseUp("crawlspace.toml");
@@ -60,8 +59,15 @@ export default async function run(pathArg?: string) {
     },
   }) as Console;
   const urls = (await seed()) as string[];
-  const permittedUrls = permitUrls(null, urls, config);
-  const messages = permittedUrls.map((url) => ({ body: { url }, attempts: 0 }));
+  const permittedUrls = normalizeRequests(
+    null,
+    urls.map((url) => ({ url })),
+    config,
+  );
+  const messages = permittedUrls.map(({ url }) => ({
+    body: { url },
+    attempts: 0,
+  }));
 
   const enqueued = new Set(urls);
   const visited = new Set();
@@ -170,12 +176,17 @@ export default async function run(pathArg?: string) {
     }
 
     // don't enqueue URLs with certain TLDs / extensions
-    const permittedLinks = permitUrls(url, links, config);
+    const requests = (links || []).map(
+      (req: string | ({ url: string } & RequestInit)) => {
+        return typeof req === "string" ? { url: req } : req;
+      },
+    );
+    const permittedLinks = normalizeRequests(url, requests, config);
     if (permittedLinks.length > 0) {
       for (const link of permittedLinks) {
-        if (!enqueued.has(link) && !visited.has(link)) {
-          enqueued.add(link);
-          messages.push({ body: { url: link }, attempts: 0 });
+        if (!enqueued.has(link.url) && !visited.has(link)) {
+          enqueued.add(link.url);
+          messages.push({ body: { url: link.url }, attempts: 0 });
         }
       }
     }

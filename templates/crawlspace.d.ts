@@ -1,4 +1,4 @@
-type Row = Record<string, string | number | boolean | null | undefined>;
+type Row = Record<string, string | number | boolean | Date | null | undefined>;
 
 type URLRequest = string | ({ url: string } & RequestInit);
 
@@ -58,7 +58,7 @@ interface Crawler {
       extract: <T>(
         $el: HTMLElement | string,
         options: {
-          prompt?: string;
+          prompt: string;
           tools?: Array<Tool>;
           temperature?: number;
           max_tokens?: number;
@@ -93,6 +93,7 @@ interface Crawler {
     request: Request;
     response: Response;
     logger: Console;
+    xml?: any;
     z: any;
   }) => Handler | Promise<Handler>;
 }

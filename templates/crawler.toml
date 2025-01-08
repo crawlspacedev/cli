@@ -26,9 +26,49 @@ schedule = "@manual"
 #   schedule = "@weekly"       # -> 0 0 * * 0 (every week at midnight on Sunday)
 #   schedule = "@monthly"      # -> 0 0 1 * * (every month at midnight on the first of the month)
 
-maxPagesPerCrawl = 10000
+[crawl]
+# Per-crawl settings:
+
+maxMinutes = 59
+# Maximum duration of the crawl in minutes.
+# Can be any integer between 1 and 43199, inclusive.
+# Must be at least one minute less than the scheduled interval.
+
+maxRequests = 10000
 # Maximum number of pages to request per crawler run.
 # Does not include retries.
+
+maxRequestsPerOrigin = 10000
+# Maximum number of requests per origin per crawler run.
+# You can use this to limit the amount of visits per website.
+
+[links]
+# Link traversal settings:
+
+allowHosts = []
+# Allowlist of hostnames, like `www.example.com`. Supersedes `links.disallowHosts`.
+# Provide values to limit the crawl to an explicit set of hard-coded hostnames.
+
+allowTLDs = []
+# Allowlist of top-level domains, like `.com`. Supersedes `links.disallowTlds`.
+# Provide values to exclude links with TLDs not included here.
+
+disallowHosts = []
+# Denylist of hostnames, like `www.example.com`.
+# Provide values to skip adding matching links to the queue.
+
+disallowTLDs = []
+# Denylist of top-level domains, like `.com`.
+# Provide values to skip adding matching links to the queue.
+# See https://docs.crawlspace.dev/build/configuration for platform-enforced values.
+
+disallowExtensions = []
+# Denylist of file extensions, like `.pdf`.
+# Provide values to skip adding matching links to the queue.
+# See https://docs.crawlspace.dev/build/configuration for platform-enforced values.
+
+ignoreQueryParams = false
+# Whether or not to remove query parameters from URLs before adding to the queue.
 
 [queue]
 # Queue consumer settings:
@@ -46,30 +86,30 @@ maxConcurrency = "auto"
 maxRetries = 3
 # Maximum number of times that an unsucessful request will be retried.
 # Retries will be re-added to the queue with exponential backoff.
-# Can be any integer between 1 and 100, inclusive.
+# Can be any integer between 0 and 100, inclusive.
+
+[vector]
+# Vector database settings:
+
+enabled = false
+# Whether or not to create a vector database for your crawler.
+# Use a vector database to store and query embeddings of text and images.
+# If you don't plan to generate or store embeddings, you can leave this disabled.
+
+dimensions = 768
+# The number of dimensions of each embedding.
+# Generate embeddings with an equal number of dimensions to save in the vector database.
+# This value cannot be changed after the vector database has been created.
+
+metric = "cosine"
+# The distance metric used to determine similar vectors.
+# Value is one of `cosine`, `euclidean`, or `dot-product`.
+# This value cannot be changed after the vector database has been created.
 
 [bucket]
 # S3-compatible bucket settings:
 
 enabled = false
 # Whether or not to create a bucket for your crawler.
-# Use buckets to store large files like images and audio.
-# If you don't plan to save media files, you can leave this disabled.
-
-[vector]
-# Vector index settings:
-
-enabled = false
-# Whether or not to create a vector index for your crawler.
-# Use a vector index to store and query embeddings of text and images.
-# If you don't plan to generate embeddings, you can leave this disabled.
-
-dimensions = 768
-# The number of dimensions of each embedding.
-# Generate embeddings with an equal number of dimensions to save in the index.
-# This value cannot be changed after the index has been created.
-
-metric = "cosine"
-# The distance metric used to determine similar vectors.
-# Value is one of `cosine`, `euclidean`, or `dot-product`.
-# This value cannot be changed after the index has been created.
+# Use buckets to store long text like markdown, or large files like images and audio.
+# If you don't plan to save long text or large files, you can leave this disabled.

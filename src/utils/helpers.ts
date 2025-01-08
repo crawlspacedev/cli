@@ -1,43 +1,119 @@
-const FORBIDDEN_HOST_REGEX = /^(localhost|[\d\.]+)$/;
-const FORBIDDEN_TLDS_REGEX = /\.(cn|gov|onion)$/;
-const FORBIDDEN_EXTS_REGEX = /\.(gif|jpg|pdf)$/;
+const ALLOWED_PROTOCOLS = ["https:", "http:"];
+const FORBIDDEN_HOSTS = ["example.com", "www.example.com"];
+const FORBIDDEN_TLDS = ["gov", "onion"];
+const FORBIDDEN_EXTS = [
+  "avif",
+  "bak",
+  "dmg",
+  "exe",
+  "gz",
+  "m4a",
+  "mov",
+  "mp3",
+  "mp4",
+  "ogg",
+  "pdf",
+  "psd",
+  "rar",
+  "rpm",
+  "wasm",
+  "wav",
+  "webm",
+  "xsd",
+  "zip",
+];
+const FORBIDDEN_SUBSTRINGS = [];
+const USELESS_QUERY_PARAMS = [];
 
-export function permitUrls(
+export function normalizeRequests(
   currentUrl: string | null,
-  hrefs: string[] = [],
-  config,
-): string[] {
-  return hrefs
-    .map((href) => {
+  requests: Array<{ url: string } & RequestInit> = [],
+  config: Config,
+): Array<{ url: string } & RequestInit> {
+  if (requests.length === 0) {
+    return [];
+  }
+
+  const normalizedRequests = requests
+    .map((request) => {
+      const hrefString = String(request.url).trim();
       const url = currentUrl
-        ? new URL(href.trim(), currentUrl).href
-        : href.trim();
+        ? new URL(hrefString, currentUrl).href
+        : hrefString;
       if (!URL.canParse(url)) {
-        console.error("Bad URL", url);
         return false;
       }
 
-      const { hostname, pathname } = new URL(url);
-      // defaults
-      if (
-        FORBIDDEN_HOST_REGEX.test(hostname) ||
-        FORBIDDEN_TLDS_REGEX.test(hostname) ||
-        FORBIDDEN_EXTS_REGEX.test(pathname)
-      ) {
+      const { protocol, host, hostname, pathname, searchParams } = new URL(url);
+      // hostname needs to have at least one period
+      if (!hostname.includes(".")) {
         return false;
       }
-      // user config
+
+      const links = config.links || ({} as keyof typeof config.links);
+      const tld = hostname.split(".").pop() || "";
+      const ext = pathname.split(".").pop() || "";
+
+      // check if user has supplied any allowlists
+      const allowHosts = links.allowHosts || [];
+      const allowTLDs = (links.allowTLDs || []).map((tld: string) =>
+        tld.replaceAll(".", ""),
+      );
+      if (allowHosts.length > 0 && !allowHosts.includes(hostname)) {
+        return false;
+      }
+      console.log("allowTLDs", allowTLDs, tld);
+      if (allowTLDs.length > 0 && !allowTLDs.includes(tld)) {
+        return false;
+      }
+      // check against platform + user denylists
+      const disallowHosts = links.disallowHosts || [];
+      const disallowTLDs = (links.disallowTLDs || []).map((tld: string) =>
+        tld.replaceAll(".", ""),
+      );
+      const disallowExtensions = (links.disallowExtensions || []).map(
+        (ext: string) => ext.replaceAll(".", ""),
+      );
       if (
-        config.avoidHosts?.includes(hostname) ||
-        config.avoidTLDs?.includes(hostname) ||
-        config.avoidExtensions?.includes(pathname)
+        !ALLOWED_PROTOCOLS.includes(protocol) ||
+        FORBIDDEN_HOSTS.concat(disallowHosts).includes(hostname) ||
+        FORBIDDEN_TLDS.concat(disallowTLDs).includes(tld) ||
+        FORBIDDEN_EXTS.concat(disallowExtensions).includes(ext) ||
+        FORBIDDEN_SUBSTRINGS.some((substr) => url.includes(substr))
       ) {
         return false;
       }
 
-      return url.replace(/^http:/, "https:");
+      // remove useless query parameters
+      let queryParams = "";
+      if (!links.ignoreQueryParams) {
+        USELESS_QUERY_PARAMS.forEach((param) => {
+          searchParams.delete(param);
+        });
+        // sort query parameters in place
+        searchParams.sort();
+        queryParams = searchParams.toString()
+          ? `?${searchParams.toString()}`
+          : "";
+      }
+
+      return {
+        url: `https://${host}${pathname}${queryParams}`,
+        method: request.method,
+        headers: request.headers,
+        body: request.body,
+      };
     })
-    .filter(Boolean) as string[];
+    .filter(Boolean) as Request[];
+
+  // Using Map to remove duplicates based on url
+  const uniqueRequests = Array.from(
+    new Map(
+      normalizedRequests.map((request) => [request.url, request]),
+    ).values(),
+  );
+
+  return uniqueRequests;
 }
 
 export function randomHeaders(hostname: string, config) {

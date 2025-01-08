@@ -4,9 +4,6 @@ export function validate(input: string, crawlerDir?: string): string | boolean {
   if (!/^[a-z]/.test(input)) {
     return "Must start with a lowercase letter.";
   }
-  if (!/[a-z]$/.test(input)) {
-    return "Must end with a lowercase letter.";
-  }
   if (/--/.test(input)) {
     return "Must not contain two consecutive hyphens.";
   }
