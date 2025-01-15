@@ -24,10 +24,10 @@ export default async function deploy(pathArg?: string) {
   const source = fs.readFileSync(entryPath, "utf-8");
   const readme = await readSourceFile("README.md", pathArg);
   const env = await readSourceFile(".env", pathArg);
-  // only pass secrets that begin with `CRAWLSPACE_`
+  // only pass secrets that begin with `SECRET_`
   const secrets = Object.fromEntries(
     Object.entries(env ? dotenv.parse(env) : {}).filter(([key]) =>
-      key.startsWith("CRAWLSPACE_"),
+      key.startsWith("SECRET_"),
     ),
   );
 
@@ -46,7 +46,7 @@ export default async function deploy(pathArg?: string) {
       }),
     });
     if (!response.ok) {
-      throw { status: response.status, statusText: response.statusText };
+      throw await response.text();
     }
     const json = await response.json();
     crawlerUrl = json.crawler_url;
@@ -62,7 +62,7 @@ export default async function deploy(pathArg?: string) {
       method: "POST",
     });
     if (!response.ok) {
-      throw { status: response.status, statusText: response.statusText };
+      throw await response.text();
     }
   } catch (error) {
     console.error(error);

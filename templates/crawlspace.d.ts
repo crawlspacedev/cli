@@ -3,7 +3,6 @@ type Row = Record<string, string | number | boolean | Date | null | undefined>;
 type URLRequest = string | ({ url: string } & RequestInit);
 
 type Handler = {
-  enqueue?: URLRequest[];
   insert?: {
     row: Row;
     embeddings?: number[][];
@@ -13,26 +12,17 @@ type Handler = {
     onConflict: string;
     embeddings?: number[][];
   };
-  upload?: {
+  attach?: {
     content: ArrayBuffer | Blob | string;
     key?: string;
     metadata?: Record<string, string>;
   };
 };
 
-type Tool = {
-  name: string;
-  description: string;
-  parameters: {
-    type: string;
-    properties: Record<string, { type: string; description: string }>;
-    required: string[];
-  };
-};
-
 interface Crawler {
   schema: ({ z }) => any;
-  seed: (seedProps: {
+  init: (seedProps: {
+    env: Record<string, string>;
     select: ({
       from,
       fields,
@@ -47,19 +37,20 @@ interface Crawler {
       limit?: number;
     }) => Promise<Record<string, any>[]>;
   }) => URLRequest[] | Promise<URLRequest[]>;
-  handler: (handlerProps: {
+  onResponse: (handlerProps: {
     $: <T>(querySelector: string) => HTMLElement | null;
     $$: <T>(querySelector: string) => Array<T>;
     ai: {
-      embeddings: (
+      embed: (
         $el: HTMLElement | string | Array<HTMLElement | string>,
         opts: { dimensions: number },
       ) => Promise<{ embeddings: number[][] }>;
       extract: <T>(
         $el: HTMLElement | string,
         options: {
-          prompt: string;
-          tools?: Array<Tool>;
+          model: "meta/llama-3.1-8b" | "meta/llama-3.3-70b";
+          instruction: string;
+          schema: any;
           temperature?: number;
           max_tokens?: number;
           top_p?: number;
@@ -77,16 +68,10 @@ interface Crawler {
         $el: HTMLElement | string,
         options?: { max_length: number },
       ) => Promise<{ summary: string }>;
-      tool: ({
-        name,
-        description,
-        schema,
-      }: {
-        name: string;
-        description: string;
-        schema: any;
-      }) => Tool;
     };
+    enqueue: (
+      reqs: URLRequest | HTMLElement | Array<URLRequest | HTMLElement>,
+    ) => void;
     env: Record<string, string>;
     getMarkdown: (querySelector?: string) => string;
     json?: any;

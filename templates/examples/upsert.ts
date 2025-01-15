@@ -1,4 +1,8 @@
 const crawler: Crawler = {
+  init() {
+    return ["https://news.ycombinator.com/newest"];
+  },
+
   schema({ z }) {
     return z.object({
       // describing a field as unique allows `onConflict` to upsert
@@ -8,15 +12,12 @@ const crawler: Crawler = {
     });
   },
 
-  seed() {
-    return ["https://news.ycombinator.com/newest"];
-  },
-
-  handler({ $, $$ }) {
+  onResponse({ $, $$, enqueue }) {
     // get the absolute URL of every link on the page
     const links = $$("a[href^='http']")
       .filter(({ href }) => URL.canParse(href))
       .map(({ href }) => new URL(href).origin);
+    enqueue(links);
 
     // get the title and description of the page
     const title = $("head > title")?.innerText;
@@ -24,7 +25,6 @@ const crawler: Crawler = {
     const row = { title, description };
 
     return {
-      enqueue: links,
       upsert: { row, onConflict: "url" },
     };
   },

@@ -6,7 +6,6 @@ import dev from "./commands/dev";
 import login from "./commands/login";
 import logout from "./commands/logout";
 import create from "./commands/new";
-import run from "./commands/run";
 import whoami from "./commands/whoami";
 
 const cli = sade("crsp");
@@ -50,25 +49,9 @@ cli
   .action(dev);
 
 cli
-  .command("run [path]")
-  .describe("Run a crawler locally")
-  .example("run ./src/my-crawler")
-  .action(run);
-
-// cli
-//   .command("bundle [path]")
-//   .describe("Bundle a crawler into a single file for deployment")
-//   // .option("-o, --output", "Change the name of the output file", "crawler.js")
-//   .example("bundle")
-//   .example("bundle .")
-//   .example("bundle ./src/my-crawler/")
-//   // .example("bundle ./src/crawlers/crawler.ts -o build.js")
-//   .action(bundle);
-
-cli
   .command("deploy [path]")
   .describe("Deploy a crawler to crawlspace.dev")
-  .example("deploy ./src/my-crawler")
+  // .example("deploy ./src/my-crawler")
   .action(deploy);
 
 export default cli;
