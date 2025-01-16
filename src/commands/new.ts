@@ -176,7 +176,7 @@ export default async function create() {
   console.log();
   console.log("Next:");
   console.log(`      cd ${relativePath}`);
-  console.log(`      crsp run`);
+  console.log(`      crsp dev`);
   console.log(`      crsp deploy`);
   console.log();
 }
