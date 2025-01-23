@@ -1,0 +1,113 @@
+# Crawler configuration and settings
+
+name = "$name"
+# Name of your crawler. Keep as unique for your user.
+
+entry = "./main.ts"
+# Relative path to the entrypoint of your crawler.
+
+schedule = "@manual"
+# How often your crawler runs.
+# Set to `@manual` to only trigger manually.
+# Accepts valid crontab syntax and shorthand expressions.
+# Go to https://cron-ai.vercel.app for help generating a cron expression.
+# Crontab syntax examples:
+#         *               *                *                   *              *
+#   [minute (0-59)] [hour (0-23)] [day of month (1-31)] [month (1-12)] [weekday (0-7)]
+#         *               *                *                   *              *
+#   schedule = "*/10 * * * *"  # every 10 minutes
+#   schedule = "45 23 * * *"   # every day at 11:45pm UTC
+#   schedule = "30 12 * * 2"   # every Tuesday at 12:30pm UTC
+#   schedule = "59 1 14 3 *"   # every March 14 at 1:59am UTC
+# Valid shorthand examples:
+#   schedule = "@hourly"       # -> 0 * * * * (every hour at the beginning of the hour)
+#   schedule = "@daily"        # -> 0 0 * * * (every day at midnight)
+#   schedule = "@weekly"       # -> 0 0 * * 0 (every week at midnight on Sunday)
+#   schedule = "@monthly"      # -> 0 0 1 * * (every month at midnight on the first of the month)
+
+[crawl]
+# Per-crawl and link traversal settings:
+
+maxRequests = 10000
+# Maximum number of pages to request per crawler run.
+# Does not include requests to /robots.txt or retries.
+
+# maxRequestsPerOrigin = 10000
+# Maximum number of requests per origin per crawler run.
+# You can use this to limit the amount of visits per website.
+
+# maxMinutes = 59
+# Maximum duration of the crawl in minutes.
+# Can be any integer between 1 and 43199, inclusive.
+# Must be at least one minute less than the scheduled interval.
+
+matchDomains = []
+# Glob patterns matching a URL's hostname. Wildcards (*) match between dot (.) characters.
+# Provide values to allow or deny adding certain URLs to the queue.
+# Domain glob examples:
+#   "example.com"     # only crawl URLs whose hostname equals `example.com`
+#   "*.example.com"   # only crawl single-level subdomains of example.com
+#   "**.example.com"  # only crawl multi-level subdomains of example.com
+#   "**.io"           # only crawl .io domains
+#   "!**.tk"          # do not crawl .tk domains
+# See https://docs.crawlspace.dev/build/configuration for more globbing examples.
+
+matchPaths = []
+# Glob patterns matching a URL's pathname. Wildcards (*) match between slash (/) characters.
+# Provide values to allow or deny adding certain URLs to the queue.
+# Path glob examples:
+#   "/jobs"           # only crawl URLs whose pathname equals `/jobs`
+#   "/jobs/*"         # only crawl URLs one level under the `/jobs` directory
+#   "/jobs/**"        # only crawl URLs whose pathname starts with `/jobs/`
+#   "**/*.html"       # only crawl URLs that have a .html file extension
+#   "!**/*.gif"       # do not crawl URLs that have a .gif file extension
+# See https://docs.crawlspace.dev/build/configuration for more globbing examples.
+
+ignoreQueryParams = true
+# Whether or not to remove query parameters from URLs before adding to the queue.
+
+[queue]
+# Queue consumer settings:
+
+# batchSize = 6
+# Maximum number of requests that a worker will attempt to fetch in parallel.
+# When not defined, the value is the maximum allowed according to plan limits.
+# Go to https://crawlspace.dev/pricing#comparison to compare limits per plan.
+
+# maxConcurrency = 8
+# Maximum amount of concurrent workers assigned to relieve queue pressure.
+# When not defined, the value is the maximum allowed according to plan limits.
+# It can be useful to set this value to avoid an origin's rate limits.
+# Go to https://crawlspace.dev/pricing#comparison to compare limits per plan.
+
+# maxRetries = 3
+# Maximum number of times that an unsucessful request will be retried.
+# When not defined, the value is the maximum allowed according to plan limits.
+# Retries will be re-added to the queue with exponential backoff.
+# Go to https://crawlspace.dev/pricing#comparison to compare limits per plan.
+
+[vector]
+# Vector database settings:
+
+enabled = false
+# Whether or not to create a vector database for your crawler.
+# Use a vector database to store and query embeddings of text and images.
+# If you don't plan to generate or store embeddings, you can leave this disabled.
+
+dimensions = 768
+# The number of dimensions of each embedding.
+# Generate embeddings with an equal number of dimensions to save in the vector database.
+# This value cannot be changed after the vector database has been created.
+
+metric = "cosine"
+# The distance metric used to determine similar vectors.
+# Value is one of `cosine`, `euclidean`, or `dot-product`.
+# This value cannot be changed after the vector database has been created.
+
+[bucket]
+# S3-compatible bucket settings:
+
+enabled = false
+# Whether or not to create a bucket for your crawler.
+# Use buckets to store long text like markdown, or large files like images and audio.
+# If you don't plan to save long text or large files, you can leave this disabled.

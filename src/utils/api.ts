@@ -21,7 +21,10 @@ export default async function api(
   };
 
   const response = await fetch(url, { ...options, headers });
-  if (response.status === 401) {
+  if (
+    response.status === 401 &&
+    response.headers.get("x-please-refresh") === "true"
+  ) {
     // console.log("Refreshing access token...");
     // hit em with the refresh token endpoint
     const refresh = await fetch(`${API_BASE_URL}/v1/auth/refresh`, {
@@ -32,7 +35,10 @@ export default async function api(
       const session = await refresh.json();
       setAuthTokens(session);
       // play it again sam!
-      return await api(path, options);
+      return await api(path, {
+        ...options,
+        headers: { ...options.headers, "x-do-not-refresh": "true" },
+      });
     } else {
       throw "Could not refresh access token. Please run `crsp login`";
     }
