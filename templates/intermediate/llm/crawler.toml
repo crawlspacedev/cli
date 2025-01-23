@@ -63,7 +63,7 @@ matchPaths = []
 #   "!**/*.gif"       # do not crawl URLs that have a .gif file extension
 # See https://docs.crawlspace.dev/build/configuration for more globbing examples.
 
-ignoreQueryParams = true
+ignoreQueryParams = false
 # Whether or not to remove query parameters from URLs before adding to the queue.
 
 [queue]
