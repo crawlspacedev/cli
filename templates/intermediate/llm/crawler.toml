@@ -1,6 +1,6 @@
 # Crawler configuration and settings
 
-name = "my-first-crawler"
+name = "$name"
 # Name of your crawler. Keep as unique for your user.
 
 entry = "./main.ts"
@@ -28,7 +28,7 @@ schedule = "@manual"
 [crawl]
 # Per-crawl and link traversal settings:
 
-maxRequests = 10000
+maxRequests = 100
 # Maximum number of pages to request per crawler run.
 # Does not include requests to /robots.txt or retries.
 
@@ -41,7 +41,7 @@ maxRequests = 10000
 # Can be any integer between 1 and 43199, inclusive.
 # Must be at least one minute less than the scheduled interval.
 
-matchDomains = []
+matchDomains = ["sfbay.craigslist.org"]
 # Glob patterns matching a URL's hostname. Wildcards (*) match between dot (.) characters.
 # Provide values to allow or deny adding certain URLs to the queue.
 # Domain glob examples:
@@ -63,7 +63,7 @@ matchPaths = []
 #   "!**/*.gif"       # do not crawl URLs that have a .gif file extension
 # See https://docs.crawlspace.dev/build/configuration for more globbing examples.
 
-ignoreQueryParams = false
+ignoreQueryParams = true
 # Whether or not to remove query parameters from URLs before adding to the queue.
 
 [queue]

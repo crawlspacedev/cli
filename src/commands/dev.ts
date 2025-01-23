@@ -1,7 +1,8 @@
+import { confirm } from "@inquirer/prompts";
 import chalk from "chalk";
 import dotenv from "dotenv";
 import { XMLParser } from "fast-xml-parser";
-import { parseHTML } from "linkedom";
+import { HTMLElement, parseHTML } from "linkedom";
 import { NodeHtmlMarkdown } from "node-html-markdown-cloudflare";
 import ora from "ora";
 import path from "path";
@@ -10,6 +11,7 @@ import sqlite3 from "sqlite3";
 import { open } from "sqlite";
 import { z } from "zod";
 
+import genAi from "../utils/ai";
 import api from "../utils/api";
 import bundle from "../utils/bundle";
 import { getEntryPath, readSourceFile, traverseUp } from "../utils/cwd";
@@ -78,6 +80,11 @@ export default async function dev() {
   console.log(`🌐 JavaScript rendering not available locally`);
   console.log(`🐢 Local crawls are slow - deploy to speed up!`);
   console.log();
+
+  const isConfirmed = await confirm({ message: "Ready?" });
+  if (!isConfirmed) {
+    return;
+  }
 
   // create new database if not exists
   const db = await open({
@@ -196,10 +203,11 @@ export default async function dev() {
           }
         });
       };
+
       const onResponseProps = {
         $,
         $$,
-        ai: {},
+        ai: genAi({ nhm }),
         enqueue,
         env: secrets,
         getMarkdown,
@@ -211,15 +219,16 @@ export default async function dev() {
         z,
       };
 
+      // TODO: wrap in try/catch
       const onResponse = await userland.onResponse(onResponseProps);
 
       // save data in sqlite
-      const isSqlInsert = Object.keys(onResponse.insert?.row || {}).length > 0;
-      const isSqlUpsert = Object.keys(onResponse.upsert?.row || {}).length > 0;
+      const isSqlInsert = Object.keys(onResponse?.insert?.row || {}).length > 0;
+      const isSqlUpsert = Object.keys(onResponse?.upsert?.row || {}).length > 0;
       if (isSqlInsert || isSqlUpsert) {
         const data = isSqlInsert
-          ? onResponse.insert?.row
-          : onResponse.upsert?.row;
+          ? onResponse?.insert?.row
+          : onResponse?.upsert?.row;
         const row = {
           ...data,
           trace_id: [...Array(32)]
@@ -248,9 +257,9 @@ export default async function dev() {
         let sql = `
           INSERT INTO [${config.name}] (${columns.join(", ")})
             VALUES (${values.map((c) => "?").join(", ")})`;
-        if (onResponse.upsert?.onConflict) {
+        if (onResponse?.upsert?.onConflict) {
           sql += `
-            ON CONFLICT (${onResponse.upsert.onConflict})
+            ON CONFLICT (${onResponse?.upsert.onConflict})
             DO UPDATE SET
               ${columns.map((key) => `${key} = EXCLUDED.${key}`).join(", ")}`;
         }

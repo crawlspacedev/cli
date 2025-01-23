@@ -48,6 +48,7 @@ export default async function create() {
     const toml = fs.readFileSync(path.join(root, "crawlspace.toml"), "utf-8");
     const { dir } = parseToml(toml);
     crawlerDir = path.join(root, dir as string);
+    mkdirp.sync(crawlerDir);
   }
 
   const name = await input({
@@ -65,12 +66,24 @@ export default async function create() {
     message: "Template:",
     choices: [
       {
-        name: "Basics > Inserting data",
-        value: "insert",
+        name: "Beginner > Insert data into SQLite",
+        value: "beginner/insert",
       },
       {
-        name: "Basics > Upserting data",
-        value: "upsert",
+        name: "Beginner > Upsert data into SQLite",
+        value: "beginner/upsert",
+      },
+      {
+        name: "Beginner > Upload data into a bucket",
+        value: "beginner/attach",
+      },
+      {
+        name: "Intermediate > Extract data with LLMs",
+        value: "intermediate/llm",
+      },
+      {
+        name: "Intermediate > RAG content with embeddings",
+        value: "intermediate/rag",
       },
     ],
   });
@@ -134,16 +147,28 @@ export default async function create() {
 
   const configTomlTemplate = fs
     .readFileSync(
-      path.resolve(__dirname, "..", "templates", "crawler.toml"),
+      path.resolve(
+        __dirname,
+        "..",
+        "templates",
+        ...template.split("/"),
+        "crawler.toml",
+      ),
       "utf-8",
     )
-    .replace("my-first-crawler", name);
+    .replace("$name", name);
   const configFilePath = path.join(crawlerDir, name, "crawler.toml");
   fs.writeFileSync(configFilePath, configTomlTemplate, "utf-8");
 
   const ext = lang === "typescript" ? "ts" : "js";
   let mainTemplate = fs.readFileSync(
-    path.resolve(__dirname, "..", "templates", "examples", `${template}.ts`),
+    path.resolve(
+      __dirname,
+      "..",
+      "templates",
+      ...template.split("/"),
+      "main.ts",
+    ),
     "utf-8",
   );
   if (lang === "javascript") {
