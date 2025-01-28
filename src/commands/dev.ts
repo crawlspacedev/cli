@@ -182,8 +182,7 @@ export default async function dev() {
       );
 
       // turn any relative hrefs into absolute urls
-      const getHref = (href: string): string =>
-        new URL(href, response.url).href;
+      const getHref = (href: string): string => new URL(href, request.url).href;
       const newRequests = [];
       const enqueue = (
         queueItems:
