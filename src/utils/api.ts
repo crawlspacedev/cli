@@ -2,7 +2,7 @@ import { getAuthTokens, setAuthTokens } from "./auth";
 
 export default async function api(
   path: string,
-  options?: RequestInit,
+  options: RequestInit = {},
 ): Promise<Response> {
   try {
     var { access_token, refresh_token } = getAuthTokens();

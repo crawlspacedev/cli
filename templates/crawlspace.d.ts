@@ -23,6 +23,7 @@ interface Crawler {
   schema: ({ z }) => any;
   init: (seedProps: {
     env: Record<string, string>;
+    search: (query: string) => Promise<string[]>;
     select: ({
       from,
       fields,

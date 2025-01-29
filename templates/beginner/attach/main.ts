@@ -1,6 +1,8 @@
 const crawler: Crawler = {
-  init() {
-    return ["https://news.ycombinator.com/newest"];
+  async init({ search }) {
+    // return an array of URLs,
+    // or use the `search()` function to search the web
+    return await search("example search query");
   },
 
   schema({ z }) {

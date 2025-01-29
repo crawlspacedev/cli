@@ -18,6 +18,7 @@ import { getEntryPath, readSourceFile, traverseUp } from "../utils/cwd";
 import { alterTableStatement, createTableStatement } from "../utils/db";
 import { normalizeRequests } from "../utils/helpers";
 import { htmlToMarkdown } from "../utils/markdown";
+import { searchFactory } from "../utils/serps";
 
 function statusEmoji(code: number): string {
   if (code >= 200 && code <= 299) {
@@ -130,9 +131,10 @@ export default async function dev() {
   }
 
   const nhm = new NodeHtmlMarkdown();
-  let localQueue = (await userland.init({ env: secrets })).map((item) =>
-    typeof item === "string" ? { url: item } : item,
-  );
+  console.log(`Initializing crawler...`);
+  let localQueue = (
+    await userland.init({ env: secrets, search: searchFactory() })
+  ).map((item) => (typeof item === "string" ? { url: item } : item));
 
   let i = 0;
   for (const request of localQueue) {
