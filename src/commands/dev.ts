@@ -168,7 +168,10 @@ export default async function dev() {
         };
       } else if (contentType.startsWith("application/json")) {
         var json = await response.json();
-      } else if (contentType.startsWith("text/xml")) {
+      } else if (
+        contentType.startsWith("text/xml") ||
+        contentType.startsWith("application/xml")
+      ) {
         const parser = new XMLParser();
         var xml = parser.parse(await response.text());
       } else {
