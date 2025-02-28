@@ -152,6 +152,8 @@ export default async function dev() {
       const end = Date.now();
       spinner.stop();
 
+      let xml = undefined;
+      let json = undefined;
       let html = "";
       let $ = (qs: string) => <HTMLElement | null>null;
       let $$ = (qs: string) => <NodeList | never[]>[];
@@ -167,13 +169,13 @@ export default async function dev() {
           return htmlToMarkdown(value!, nhm);
         };
       } else if (contentType.startsWith("application/json")) {
-        var json = await response.json();
+        json = await response.json();
       } else if (
         contentType.startsWith("text/xml") ||
         contentType.startsWith("application/xml")
       ) {
         const parser = new XMLParser();
-        var xml = parser.parse(await response.text());
+        xml = parser.parse(await response.text());
       } else {
         // TODO: should we do something here?
       }
