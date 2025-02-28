@@ -39,8 +39,8 @@ interface Crawler {
     }) => Promise<Record<string, any>[]>;
   }) => URLRequest[] | Promise<URLRequest[]>;
   onResponse: (handlerProps: {
-    $: <T>(querySelector: string) => HTMLElement | null;
-    $$: <T>(querySelector: string) => Array<T>;
+    $: <T>(querySelector: string) => Element&T | null;
+    $$: <T>(querySelector: string) => Array<Element&T>;
     ai: {
       embed: (
         $el: HTMLElement | string | Array<HTMLElement | string>,
@@ -74,7 +74,7 @@ interface Crawler {
       reqs: URLRequest | HTMLElement | Array<URLRequest | HTMLElement>,
     ) => void;
     env: Record<string, string>;
-    getMarkdown: (querySelector?: string) => string;
+    getMarkdown: (element?: Element) => string;
     json?: any;
     request: Request;
     response: Response;
