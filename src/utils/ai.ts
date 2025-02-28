@@ -6,16 +6,6 @@ import { zodToJsonSchema } from "zod-to-json-schema";
 import api from "./api";
 import { htmlToMarkdown } from "./markdown";
 
-type Tool = {
-  name: string;
-  description: string;
-  parameters: {
-    type: string;
-    properties: Record<string, { type: string; description: string }>;
-    required: string[];
-  };
-};
-
 type ExtractionOptions = {
   model: "meta/llama-3.1-8b" | "meta/llama-3.3-70b";
   instruction: string;
@@ -34,13 +24,8 @@ export default function genAi({ nhm }: { nhm: NodeHtmlMarkdown }) {
   return {
     async extract($el: HTMLElement | string, opts: ExtractionOptions) {
       const text = $el instanceof HTMLElement ? htmlToMarkdown($el, nhm) : $el;
-      const parameters = zodToJsonSchema(opts.schema, "parameters");
-      const tool = {
-        name: "dataExtractor",
-        description: "Extract data that conforms to the provided schema",
-        ...parameters.definitions,
-      } as Tool;
-      const options = { ...opts, tool };
+      const schema = zodToJsonSchema(opts.schema, "json_schema").definitions;
+      const options = { ...opts, schema };
       const response = await api("/v1/cli/ai/extract", {
         method: "POST",
         body: JSON.stringify({ corpus: text, options }),
